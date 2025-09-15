@@ -1,0 +1,72 @@
+logging:
+  level:
+    web: debug
+    live.tikgik.expenses.gatetwayserver: debug
+  pattern:
+    level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"
+
+spring:
+  application:
+    name: gatewayserver
+  config:
+    import: ${CONFIG_SERVER_URL:optional:configserver:http://localhost:8071/}
+  cloud:
+    gateway:
+      server:
+        webflux:
+          httpclient:
+            # time for gateway server to take to get a connection thread to the other microservice
+            connect-timeout: 1000
+            #  time to receive response from respective microservice
+            response-timeout: 20s
+          discovery:
+            locator:
+              # making this as false will prevent the default behaviour which is to go lookup service name based from eureka!
+              enabled: false
+              lower-case-service-id: true
+
+  data:
+    redis:
+      connect-timeout: 20s
+      host: ${REDIS_HOST:localhost}
+      port: 6379
+      timeout: 20s
+  rabbitmq:
+    host: ${RABBIT_MQ_HOST:localhost}
+    port: 5672
+    username: guest
+    password: guest
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${JWK-SET-URI:http://localhost:7080/realms/master/protocol/openid-connect/certs}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    gateway:
+      access: unrestricted
+    shutdown:
+      access: unrestricted
+  info:
+    env:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+info:
+  app:
+    name: "gateway"
+    description: "Eazy Bank gateway Application"
+    version: "1.0.0"
+resilience4j.circuitbreaker:
+  configs:
+    default:
+      slidingWindowSize: 10
+      permittedNumberOfCallsInHalfOpenState: 2
+      failureRateThreshold: 50
+      waitDurationInOpenState: 10000

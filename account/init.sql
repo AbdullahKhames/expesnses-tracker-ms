@@ -1,0 +1,1 @@
+CREATE DATABASE tikgik_expenses_account;

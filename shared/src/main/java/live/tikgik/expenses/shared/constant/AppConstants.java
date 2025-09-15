@@ -1,0 +1,24 @@
+package live.tikgik.expenses.shared.constant;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@Getter
+@AllArgsConstructor
+public enum AppConstants {
+
+    UTC_ZONE_ID("UTC"),
+
+    SYMBOL_WHITESPACE(" "),
+
+    SYMBOL_COMMA(","),
+
+    SYMBOL_EMAIL("@"),
+
+    SYMBOL_UNDERSCORE("_"),
+
+    SYMBOL_SLASH("/"),
+
+    INVALID_CODE("Invalid code: %s");
+    private final String key;
+}
