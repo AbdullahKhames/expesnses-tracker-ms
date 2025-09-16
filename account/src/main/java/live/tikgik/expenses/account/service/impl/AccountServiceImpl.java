@@ -2,11 +2,14 @@ package live.tikgik.expenses.account.service.impl;
 
 
 import jakarta.persistence.EntityManager;
+import live.tikgik.expenses.account.config.UserContextHolder;
 import live.tikgik.expenses.account.dao.AccountDAO;
 import live.tikgik.expenses.account.dto.request.AccountReqDto;
 import live.tikgik.expenses.account.dto.request.AccountUpdateDto;
 import live.tikgik.expenses.account.dto.response.AccountRespDto;
 import live.tikgik.expenses.account.entity.Account;
+import live.tikgik.expenses.account.entity.Budget;
+import live.tikgik.expenses.account.entity.BudgetType;
 import live.tikgik.expenses.account.mapper.AccountMapper;
 import live.tikgik.expenses.account.service.AccountService;
 import live.tikgik.expenses.account.service.BudgetService;
@@ -23,6 +26,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -46,10 +50,22 @@ public class AccountServiceImpl implements AccountService {
     @Transactional(readOnly = false)
     public ApiResponse create(AccountReqDto entityReqDto) {
         Account sentAccount = accountMapper.reqDtoToEntity(entityReqDto);
+        String customerId = UserContextHolder.getUser().getId();
+        sentAccount.getCustomerIds().add(customerId);
+        Budget main = budgetService.createBudget(BudgetType.MAIN, sentAccount, customerId, true, true);
+        Budget service = budgetService.createBudget(BudgetType.SERVICE, sentAccount, customerId, false, false);
+        Budget donation = budgetService.createBudget(BudgetType.DONATION, sentAccount, customerId, false, false);
+        Budget external = budgetService.createBudget(BudgetType.EXTERNAL, sentAccount, customerId, false, false);
+        sentAccount.getBudgets().add(service);
+        sentAccount.getBudgets().add(main);
+        sentAccount.getBudgets().add(donation);
+        sentAccount.getBudgets().add(external);
         Account savedAccount = accountDAO.create(sentAccount);
         log.info("created account {}", savedAccount);
+        //TODO call customer association ms and add account to customer
         return ApiResponse.getCreateResponse(ACCOUNT.name(), savedAccount.getRefNo(), accountMapper.entityToRespDto(savedAccount));
     }
+
     @Override
     public ApiResponse addAssociation(String accountRefNo, String budgetRefNo) {
         Optional<Account> accountOptional = getEntity(accountRefNo);

@@ -10,6 +10,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import static live.tikgik.expenses.shared.constant.AppConstants.*;
+
 @Component
 public class JwtClaimsToHeaderFilter implements GlobalFilter, Ordered {
 
@@ -19,10 +25,19 @@ public class JwtClaimsToHeaderFilter implements GlobalFilter, Ordered {
             .map(ctx -> ctx.getAuthentication())
             .cast(JwtAuthenticationToken.class)
             .flatMap(auth -> {
+                Map<String, Object> realmAccess = auth.getToken().getClaim("realm_access");
+                String roles = "";
+
+                if (realmAccess != null && realmAccess.containsKey("roles")) {
+                    roles = ((List<String>) realmAccess.get("roles"))
+                            .stream()
+                            .collect(Collectors.joining(","));
+                }
                 ServerHttpRequest mutatedRequest = exchange.getRequest().mutate()
-                        .header("X-User-Id", auth.getToken().getClaimAsString("sub"))
-                        .header("X-Username", auth.getToken().getClaimAsString("preferred_username"))
-                        .header("X-Email", auth.getToken().getClaimAsString("email"))
+                        .header(X_USER_ID.getKey(), auth.getToken().getClaimAsString("sub"))
+                        .header(X_USER_NAME.getKey(), auth.getToken().getClaimAsString("preferred_username"))
+                        .header(X_EMAIL.getKey(), auth.getToken().getClaimAsString("email"))
+                        .header(X_ROLES.getKey(), roles)
                         .build();
 
                 return chain.filter(exchange.mutate().request(mutatedRequest).build());

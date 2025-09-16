@@ -8,6 +8,10 @@ import lombok.Getter;
 public enum AppConstants {
 
     UTC_ZONE_ID("UTC"),
+    X_USER_ID("X-User-Id"),
+    X_USER_NAME("X-Username"),
+    X_EMAIL("X-Email"),
+    X_ROLES("X-Roles"),
 
     SYMBOL_WHITESPACE(" "),
 

@@ -11,6 +11,6 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(exception = Exception.class)
 	public ResponseEntity<ApiResponse> handleGlobalException(Exception e) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.failed(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase()));
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.failed(e));
     }
 }

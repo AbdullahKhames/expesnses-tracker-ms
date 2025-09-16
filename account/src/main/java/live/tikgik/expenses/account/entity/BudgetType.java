@@ -1,12 +1,13 @@
 package live.tikgik.expenses.account.entity;
 
 public enum BudgetType {
-    ENTERTAINMENT,
+    MAIN,
+    SERVICE,
     SAVINGS,
     BILLS,
     ALLOWANCE,
-    MOM,
     MISC,
     DONATION,
-    EXTERNAL, DEFAULT,
+    EXTERNAL,
+    DEFAULT,
 }

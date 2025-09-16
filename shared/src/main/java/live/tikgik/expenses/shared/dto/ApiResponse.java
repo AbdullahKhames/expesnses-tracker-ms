@@ -1,5 +1,7 @@
 package live.tikgik.expenses.shared.dto;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import live.tikgik.expenses.shared.enums.Models;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,9 +9,13 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.domain.Page;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -17,13 +23,12 @@ import java.util.List;
 @AllArgsConstructor
 public class ApiResponse {
 
-    Boolean isSuccess;
-    List<String> errorMessage;
-    private String message;
+    private Boolean isSuccess;
+    private List<String> errorMessages;
     @Builder.Default
     private LocalDateTime time = LocalDateTime.now();
     private int statusCode;
-    Object data;
+    private Object data;
 
     public static ApiResponse success(Object data) {
         return ApiResponse.builder().isSuccess(true).data(data).build();
@@ -33,12 +38,20 @@ public class ApiResponse {
         return ApiResponse.builder().isSuccess(true).build();
     }
 
-    public static ApiResponse failed(String errorMessage, String statusMessage) {
-        return ApiResponse.builder().isSuccess(false).message(statusMessage).errorMessage(List.of(errorMessage)).build();
+    public static ApiResponse failed(Exception exception) {
+        List<String> errorMessages = new ArrayList<>();
+        if (exception instanceof ConstraintViolationException ex) {
+            errorMessages = ex.getConstraintViolations().stream().map(ConstraintViolation::getMessage).toList();
+        } else if (exception instanceof MethodArgumentNotValidException ex) {
+            errorMessages = ex.getBindingResult().getFieldErrors().stream().map(FieldError::getDefaultMessage).toList();
+        } else {
+            errorMessages.add(exception.getLocalizedMessage());
+        }
+        return ApiResponse.builder().isSuccess(false).errorMessages(errorMessages).data(exception.getLocalizedMessage()).statusCode(810).build();
     }
 
     public static ApiResponse failed(List<String> errorMessage) {
-        return ApiResponse.builder().isSuccess(false).errorMessage(errorMessage).build();
+        return ApiResponse.builder().isSuccess(false).errorMessages(errorMessage).build();
     }
 
     public static ApiResponse failed(int statusCode) {
@@ -121,8 +134,7 @@ public class ApiResponse {
 
     public static ApiResponse createResponse(String message, boolean status, int code, Object data) {
         return ApiResponse.builder()
-                .message(message)
-                .errorMessage(status ? null : List.of(message))
+                .errorMessages(status ? null : List.of(message))
                 .isSuccess(status)
                 .statusCode(code)
                 .data(data)

@@ -7,6 +7,7 @@ import lombok.*;
 
 import org.hibernate.proxy.HibernateProxy;
 
+import java.math.BigDecimal;
 import java.util.Objects;
 
 @Getter
@@ -17,11 +18,11 @@ import java.util.Objects;
 @NoArgsConstructor
 public class Budget extends BaseEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
     private String name;
     private String details;
-    private Double amount;
+    private BigDecimal amount;
     @Enumerated(EnumType.STRING)
     private BudgetType budgetType;
     @Column(columnDefinition = "boolean default false")
@@ -34,7 +35,25 @@ public class Budget extends BaseEntity {
     @JsonIgnore
     private Account account;
 
-//    @PreUpdate
+    public Budget(String name, BigDecimal amount, BudgetType budgetType, Account account, String customerId) {
+        this.name = name;
+        this.amount = amount;
+        this.budgetType = budgetType;
+        this.customerId = customerId;
+        this.account = account;
+    }
+
+    public Budget(String name, BigDecimal amount, BudgetType budgetType, boolean defaultReceiver, boolean defaultSender, Account account, String customerId) {
+        this.name = name;
+        this.amount = amount;
+        this.budgetType = budgetType;
+        this.defaultReceiver = defaultReceiver;
+        this.defaultSender = defaultSender;
+        this.account = account;
+        this.customerId = customerId;
+    }
+
+    //    @PreUpdate
 //    protected void onUpdate() {
 //        this.setUpdatedAt(LocalDateTime.now());
 //    }

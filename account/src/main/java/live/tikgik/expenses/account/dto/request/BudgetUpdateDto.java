@@ -20,7 +20,7 @@ public class BudgetUpdateDto {
     private String refNo;
     private String details;
     @NotNull
-    @EnumNamePattern(regexp = "ENTERTAINMENT|SAVINGS|BILLS|ALLOWANCE|MOM|MISC|DONATION|EXTERNAL")
+    @EnumNamePattern(regexp = "MAIN|SAVINGS|BILLS|ALLOWANCE|MISC|DONATION|EXTERNAL")
     private BudgetType budgetType;
     @NotNull
     private Double amount;

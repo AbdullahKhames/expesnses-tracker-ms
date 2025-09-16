@@ -2,10 +2,6 @@ package live.tikgik.expenses.account.dao.impl;
 
 
 import jakarta.persistence.*;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Path;
-import jakarta.persistence.criteria.Root;
 import live.tikgik.expenses.account.dao.AccountDAO;
 import live.tikgik.expenses.account.entity.Account;
 import live.tikgik.expenses.account.repository.AccountRepository;
@@ -188,5 +184,10 @@ public class AccountDAOImpl implements AccountDAO {
     @Override
     public Account getDefaultAccount() {
         return accountRepository.findById(1L).orElse(null);
+    }
+
+    @Override
+    public boolean existByNameAndCustomerIdsContaining(String name, String customerId) {
+        return accountRepository.existsByNameAndCustomerIdsContaining(name, customerId);
     }
 }

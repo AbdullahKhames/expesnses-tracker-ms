@@ -27,6 +27,6 @@ public interface BudgetRepository extends JpaRepository<Budget, Long> {
 
     Set<Budget> findByRefNoIn(Set<String> refNos);
 
-    @Query("SELECT c FROM Account c JOIN c.budgets s WHERE s.id = :id")
-    Account findAccountById(Long id);
+    @Query("SELECT c.id FROM Account c JOIN c.budgets s WHERE s.id = :id")
+    Long findAccountById(Long id);
 }

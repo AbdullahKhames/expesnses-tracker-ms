@@ -24,10 +24,8 @@ public class BudgetReqDto {
     @NotNull
     private Double amount;
     @NotNull
-    @EnumNamePattern(regexp = "ENTERTAINMENT|SAVINGS|BILLS|ALLOWANCE|MOM|MISC|DONATION|EXTERNAL")
+    @EnumNamePattern(regexp = "MAIN|SAVINGS|BILLS|ALLOWANCE|MISC|DONATION|EXTERNAL")
     private BudgetType budgetType;
-    @NotNull
-    private Long customerId;
     @NotNull
     @NotBlank
     private String accountRefNo;

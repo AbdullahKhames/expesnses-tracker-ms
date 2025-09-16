@@ -1,18 +1,29 @@
 package live.tikgik.expenses.account.config;
 
+import live.tikgik.expenses.shared.model.User;
+
+import java.util.List;
+
 public class UserContextHolder {
 
-    private static final ThreadLocal<String> USERNAME = new ThreadLocal<>();
+    private static final String ANONYMOUS = "anonymous";
+    private static final User ANONYMOUS_USER = User.builder()
+            .id(ANONYMOUS)
+            .username(ANONYMOUS)
+            .email(ANONYMOUS)
+            .roles(List.of(ANONYMOUS))
+            .build();
+    private static final ThreadLocal<User> USER = new ThreadLocal<>();
 
-    public static void setUsername(String username) {
-        USERNAME.set(username);
+    public static void setUser(User user) {
+        USER.set(user);
     }
 
-    public static String getUsername() {
-        return USERNAME.get() != null ? USERNAME.get() : "Anonymous";
+    public static User getUser() {
+        return USER.get() != null ? USER.get() : ANONYMOUS_USER;
     }
 
     public static void clear() {
-        USERNAME.remove();
+        USER.remove();
     }
 }

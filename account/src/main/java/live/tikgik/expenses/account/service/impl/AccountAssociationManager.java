@@ -39,13 +39,12 @@ public class AccountAssociationManager {
                                       Models accountModels,
                                       T refNo) {
 
-        CollectionAdder<Account> AccountCollectionAdder = adderHandler.get(accountModels);
-//        CollectionAdder<Account, budgetUpdateDto> AccountCollectionAdder = adderHandler.get(accountModels);
-        if (AccountCollectionAdder == null) {
+        CollectionAdder<Account> accountCollectionAdder = adderHandler.get(accountModels);
+        if (accountCollectionAdder == null) {
             return false;
         }
-        if (refNo instanceof String){
-            return AccountCollectionAdder.addAssociation(account, Models.ACCOUNT, (String) refNo);
+        if (refNo instanceof String s){
+            return accountCollectionAdder.addAssociation(account, Models.ACCOUNT, s);
         }
         return false;
     }
@@ -55,12 +54,13 @@ public class AccountAssociationManager {
                                      Models accountModels,
                                      Object refNo) {
 
-//        CollectionRemover<Account, budgetUpdateDto> AccountCollectionRemover = removerHandler.get(accountModels);
-        CollectionRemover<Account> AccountCollectionRemover = removerHandler.get(accountModels);
-        if (AccountCollectionRemover == null) {
+        CollectionRemover<Account> accountCollectionRemover = removerHandler.get(accountModels);
+        if (accountCollectionRemover == null) {
             return false;
         }
-//        return AccountCollectionRemover.removeAssociation(account, Models.ACCOUNT, refNo);
+        if (refNo instanceof String s){
+            return accountCollectionRemover.removeAssociation(account, Models.ACCOUNT, s);
+        }
         return false;
 
     }

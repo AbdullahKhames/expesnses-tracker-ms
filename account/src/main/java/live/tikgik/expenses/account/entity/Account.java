@@ -27,6 +27,9 @@ public class Account extends BaseEntity {
     private Set<Budget> budgets = new HashSet<>();
     @ToString.Exclude
     @JsonIgnore
+    @ElementCollection
+    @CollectionTable(name = "account_customers", joinColumns = @JoinColumn(name = "account_id"))
+    @Column(name = "customer_id")
     private Set<String> customerIds = new HashSet<>();
 //    @PreUpdate
 //    protected void onUpdate() {

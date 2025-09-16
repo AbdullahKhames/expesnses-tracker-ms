@@ -142,16 +142,14 @@ public class BudgetDAOImpl implements BudgetDAO {
 
     @Override
     public Long checkAccountAssociation(Budget Budget) {
-        Account account;
         try{
 //            TypedQuery<Account> query = entityManager.createQuery("SELECT c FROM Account c JOIN c.budgets s WHERE s.id = :id", Account.class);
 //            query.setParameter("id", Budget.getId());
 //            account = query.getSingleResult();
-            account = budgetRepository.findAccountById(Budget.getId());
+            return budgetRepository.findAccountById(Budget.getId());
         }catch (Exception ex){
             return null;
         }
-        return account.getId();
     }
 
     @Override

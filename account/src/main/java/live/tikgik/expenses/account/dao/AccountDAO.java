@@ -22,4 +22,6 @@ public interface AccountDAO {
     List<Account> getByName(String name);
 
     Account getDefaultAccount();
+
+    boolean existByNameAndCustomerIdsContaining(String name, String customerId);
 }

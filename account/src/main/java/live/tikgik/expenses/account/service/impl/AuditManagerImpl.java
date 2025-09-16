@@ -14,6 +14,6 @@ public class AuditManagerImpl implements AuditorAware<String> {
     @Override
     @NotNull
     public Optional<String> getCurrentAuditor() {
-        return Optional.of(UserContextHolder.getUsername());
+        return Optional.of(UserContextHolder.getUser().getUsername());
     }
 }

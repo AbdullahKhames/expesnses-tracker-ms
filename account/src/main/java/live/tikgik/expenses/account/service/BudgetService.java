@@ -8,6 +8,7 @@ import live.tikgik.expenses.account.dto.request.BudgetUpdateDto;
 import live.tikgik.expenses.account.dto.response.BudgetRespDto;
 import live.tikgik.expenses.account.entity.Account;
 import live.tikgik.expenses.account.entity.Budget;
+import live.tikgik.expenses.account.entity.BudgetType;
 import live.tikgik.expenses.shared.dto.ApiResponse;
 import live.tikgik.expenses.shared.service.CollectionAdder;
 import live.tikgik.expenses.shared.service.CollectionRemover;
@@ -15,6 +16,7 @@ import live.tikgik.expenses.shared.service.CrudService;
 import live.tikgik.expenses.shared.service.UpdateAssociation;
 import org.springframework.data.domain.Pageable;
 
+import java.math.BigDecimal;
 import java.util.Set;
 
 public interface BudgetService extends
@@ -23,7 +25,7 @@ public interface BudgetService extends
         UpdateAssociation<Account, AccountUpdateDto>,
         CrudService<BudgetReqDto, BudgetUpdateDto, String, Budget> {
     ApiResponse create(BudgetReqDto expense);
-
+    Budget createBudget(BudgetType budgetType, Account sentAccount, String customerId, boolean defaultReceiver, boolean defaultSender);
     void associateAccount(String accountRefNo, Budget sentBudget);
 
     ApiResponse get(String refNo);

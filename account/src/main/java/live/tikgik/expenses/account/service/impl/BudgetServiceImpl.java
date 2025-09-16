@@ -27,9 +27,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -48,16 +48,16 @@ public class BudgetServiceImpl implements BudgetService {
     }
 
     @Override
-    public ApiResponse create(BudgetReqDto BudgetReqDto) {
+    public Budget createBudget(BudgetType budgetType, Account sentAccount, String customerId, boolean defaultReceiver, boolean defaultSender) {
+        return new Budget(budgetType.name() + " budget for " + sentAccount.getName(), BigDecimal.ZERO, budgetType, defaultReceiver, defaultSender, sentAccount, customerId);
+    }
+    @Override
+    public ApiResponse create(BudgetReqDto budgetReqDto) {
         try {
-            Budget sentBudget = budgetMapper.reqDtoToEntity(BudgetReqDto);
-            sentBudget.setCustomerId(UserContextHolder.getUsername());
-            associateAccount(BudgetReqDto.getAccountRefNo(), sentBudget);
+            Budget sentBudget = budgetMapper.reqDtoToEntity(budgetReqDto);
+            sentBudget.setCustomerId(UserContextHolder.getUser().getId());
+            associateAccount(budgetReqDto.getAccountRefNo(), sentBudget);
             Budget savedBudget = budgetDAO.create(sentBudget);
-//            if (savedBudget == null || savedBudget.getId() == null){
-//                throw new GeneralFailureException(ErrorCode.OBJECT_NOT_FOUND.getErrorCode(),
-//                        Map.of("error", "savedBudget not found"));
-//            }
             log.info("created Budget {}", savedBudget);
             return ApiResponse.getCreateResponse(BUDGET, savedBudget.getRefNo(), budgetMapper.entityToRespDto(savedBudget));
         }catch (Exception ex){
@@ -84,9 +84,9 @@ public class BudgetServiceImpl implements BudgetService {
 
     public Optional<Budget> getEntity(String refNo){
         try {
-            Optional<Budget> BudgetOptional = budgetDAO.get(refNo);
-            log.info("fetched Budget {}", BudgetOptional);
-            return BudgetOptional;
+            Optional<Budget> budgetOptional = budgetDAO.get(refNo);
+            log.info("fetched Budget {}", budgetOptional);
+            return budgetOptional;
 
         }catch (Exception ex){
             return Optional.empty();
@@ -95,11 +95,11 @@ public class BudgetServiceImpl implements BudgetService {
     @Override
     public ApiResponse get(String refNo) {
         try {
-            Optional<Budget> BudgetOptional = getEntity(refNo);
-            log.info("fetched Budget {}", BudgetOptional);
-            if (BudgetOptional.isPresent()){
-                Budget Budget = BudgetOptional.get();
-                return ApiResponse.getFetchResponse(BUDGET, Budget.getRefNo(), budgetMapper.entityToRespDto(Budget));
+            Optional<Budget> budgetOptional = getEntity(refNo);
+            log.info("fetched Budget {}", budgetOptional);
+            if (budgetOptional.isPresent()){
+                Budget budget = budgetOptional.get();
+                return ApiResponse.getFetchResponse(BUDGET, budget.getRefNo(), budgetMapper.entityToRespDto(budget));
             }else {
                 throw new GeneralFailureException(GeneralFailureException.OBJECT_NOT_FOUND,
                         Map.of("error", String.format("Budget with the ref number %s was not found", refNo)));
@@ -117,9 +117,9 @@ public class BudgetServiceImpl implements BudgetService {
 
     @Override
     public ApiResponse update(String refNo, BudgetUpdateDto budgetUpdateDto) {
-        Optional<Budget> BudgetOptional = getEntity(refNo);
-        if (BudgetOptional.isPresent()){
-            Budget budget = BudgetOptional.get();
+        Optional<Budget> budgetOptional = getEntity(refNo);
+        if (budgetOptional.isPresent()){
+            Budget budget = budgetOptional.get();
             log.info("fetched Budget {}", budget);
             budgetMapper.update(budget, budgetUpdateDto);
             log.info("updated Budget {}", budget);
@@ -135,13 +135,13 @@ public class BudgetServiceImpl implements BudgetService {
     }
     @Override
     public Budget createDefaultBudget(){
-        Budget Budget = new Budget();
-        Budget.setName("default Budget");
-        Budget.setDetails("default customer Budget");
-        Budget.setBudgetType(BudgetType.DEFAULT);
-        Budget.setDefaultSender(true);
-        Budget.setDefaultReceiver(true);
-        return Budget;
+        Budget budget = new Budget();
+        budget.setName("default Budget");
+        budget.setDetails("default customer Budget");
+        budget.setBudgetType(BudgetType.DEFAULT);
+        budget.setDefaultSender(true);
+        budget.setDefaultReceiver(true);
+        return budget;
     }
     @Override
     public ApiResponse delete(String refNo) {
@@ -177,9 +177,9 @@ public class BudgetServiceImpl implements BudgetService {
         if (name == null || name.isBlank()) {
             return ApiResponse.getErrorResponse(804, "name cannot be null");
         }
-        List<Budget> Budgets = budgetDAO.getByName(name);
-        if (!Budgets.isEmpty()){
-            return ApiResponse.getFetchAllResponse(BUDGET, budgetMapper.entityToRespDto(Budgets));
+        List<Budget> budgets = budgetDAO.getByName(name);
+        if (!budgets.isEmpty()){
+            return ApiResponse.getFetchAllResponse(BUDGET, budgetMapper.entityToRespDto(budgets));
         }else {
             return ApiResponse.getErrorResponse(804, "not found");
         }
@@ -198,13 +198,13 @@ public class BudgetServiceImpl implements BudgetService {
     @Override
     public boolean addAssociation(Account entity, Models entityModel, String refNo) {
         if (ValidateInputUtils.isValidInput(entity, entity.getBudgets())) {
-            Optional<Budget> BudgetOptional = getEntity(refNo);
-            if (BudgetOptional.isEmpty()) {
+            Optional<Budget> budgetOptional = getEntity(refNo);
+            if (budgetOptional.isEmpty()) {
                 throw new GeneralFailureException(GeneralFailureException.OBJECT_NOT_FOUND,
                         Map.of("error", String.format("the Budget with given reference number : %s doesn't exist", refNo)));
             }
-            Budget Budget = BudgetOptional.get();
-            Long accountId = budgetDAO.checkAccountAssociation(Budget);
+            Budget budget = budgetOptional.get();
+            Long accountId = budgetDAO.checkAccountAssociation(budget);
             if (accountId != null) {
                 if (Objects.equals(accountId, entity.getId())) {
                     throw new GeneralFailureException(GeneralFailureException.ERROR_UPDATE,
@@ -215,7 +215,7 @@ public class BudgetServiceImpl implements BudgetService {
                 }
             }
 
-            entity.getBudgets().add(BudgetOptional.get());
+            entity.getBudgets().add(budgetOptional.get());
             return true;
         }
         return false;
@@ -224,16 +224,16 @@ public class BudgetServiceImpl implements BudgetService {
     @Override
     public boolean removeAssociation(Account entity, Models entityModel, String refNo) {
         if (ValidateInputUtils.isValidInput(entity, entity.getBudgets())) {
-            Optional<Budget> BudgetOptional = getEntity(refNo);
-            if (BudgetOptional.isEmpty()) {
+            Optional<Budget> budgetOptional = getEntity(refNo);
+            if (budgetOptional.isEmpty()) {
                 throw new GeneralFailureException(GeneralFailureException.OBJECT_NOT_FOUND,
                         Map.of("error", String.format("the subBudget with given reference number : %s doesn't exist", refNo)));
             }
-            Budget Budget = BudgetOptional.get();
-            Long accountId = budgetDAO.checkAccountAssociation(Budget);
+            Budget budget = budgetOptional.get();
+            Long accountId = budgetDAO.checkAccountAssociation(budget);
             if (accountId != null) {
                 if (Objects.equals(accountId, entity.getId())) {
-                    entity.getBudgets().remove(Budget);
+                    entity.getBudgets().remove(budget);
                 }else {
                     throw new GeneralFailureException(GeneralFailureException.ERROR_UPDATE,
                             Map.of("error", "this Budget is already present in another account!!"));
@@ -254,14 +254,14 @@ public class BudgetServiceImpl implements BudgetService {
             return errorResponse;
         }
         try {
-            Set<Budget> Budgets = new HashSet<>();
+            Set<Budget> budgets = new HashSet<>();
             for (Object obj : associationsUpdateDto) {
                 BudgetUpdateDto BudgetUpdateDto = (BudgetUpdateDto) obj;
-                Optional<Budget> BudgetOptional = getEntity(BudgetUpdateDto.getRefNo());
-                if (BudgetOptional.isPresent())
-                    Budgets.add(BudgetOptional.get());
+                Optional<Budget> budgetOptional = getEntity(BudgetUpdateDto.getRefNo());
+                if (budgetOptional.isPresent())
+                    budgets.add(budgetOptional.get());
                 else {
-                    Budgets.add(budgetMapper.reqEntityToEntity(BudgetUpdateDto));
+                    budgets.add(budgetMapper.reqEntityToEntity(BudgetUpdateDto));
                 }
             }
         }catch (Exception ex){
@@ -319,6 +319,6 @@ public class BudgetServiceImpl implements BudgetService {
     }
 
     private Budget findExistingEntity (Set < Budget > existingBudgets, String refNo){
-        return existingBudgets.stream().filter(Budget -> Budget.getRefNo().equals(refNo)).findFirst().orElse(null);
+        return existingBudgets.stream().filter(budget -> budget.getRefNo().equals(refNo)).findFirst().orElse(null);
     }
 }
