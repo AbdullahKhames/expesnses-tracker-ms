@@ -31,6 +31,7 @@ public class Budget extends BaseEntity {
     private boolean defaultSender = false;
     private String customerId;
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "account_id")
     @ToString.Exclude
     @JsonIgnore
     private Account account;

@@ -46,7 +46,8 @@ public abstract class AccountMapper {
                     @Mapping(target = "deleted", ignore = true),
                     @Mapping(target = "refNo", ignore = true),
                     @Mapping(target = "createdAt", ignore = true),
-                    @Mapping(target = "updatedAt", expression = "java(LocalDateTime.now())"),
+//                    @Mapping(target = "updatedAt", expression = "java(LocalDateTime.now())"),
+                    @Mapping(target = "budgets", ignore = true),
 
             }
 

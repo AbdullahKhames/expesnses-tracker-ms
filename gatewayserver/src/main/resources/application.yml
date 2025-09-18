@@ -11,6 +11,9 @@ spring:
   config:
     import: ${CONFIG_SERVER_URL:optional:configserver:http://localhost:8071/}
   cloud:
+    config:
+      refresh:
+        enabled: true  # Enable refresh functionality
     gateway:
       server:
         webflux:

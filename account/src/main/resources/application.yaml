@@ -6,6 +6,8 @@ logging:
   level:
     web: DEBUG
     live.tikgik.expenses.account: DEBUG
+    org.springframework.cloud.context: DEBUG
+    org.springframework.boot.context: DEBUG
   pattern:
     level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"
 
@@ -26,6 +28,8 @@ spring:
           hibernate:
               dialect: ${DB_DIALECT:org.hibernate.dialect.PostgreSQLDialect}
       open-in-view: false
+#  devtools:
+#    add-properties: false
 
   profiles:
     active: ${ACTIVE_PROFILE:prod}
@@ -40,6 +44,9 @@ spring:
     openfeign:
       circuitbreaker:
         enabled: true
+    config:
+      refresh:
+        enabled: true  # Enable refresh functionality
 #    function:
 #      definition: updateCommunication
 #    stream:

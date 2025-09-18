@@ -66,8 +66,9 @@ public class BudgetServiceImpl implements BudgetService {
     }
 
     @Override
+    @Transactional
     public void associateAccount(String accountRefNo, Budget sentBudget) {
-        Optional<Account> accountOptional = accountDAO.get(accountRefNo);
+        Optional<Account> accountOptional = accountDAO.get(accountRefNo, UserContextHolder.getUser().getId());
         if (accountOptional.isEmpty()){
             throw new GeneralFailureException(ErrorCode.OBJECT_NOT_FOUND.getErrorCode(),
                     Map.of("error", "account not found"));
@@ -188,6 +189,11 @@ public class BudgetServiceImpl implements BudgetService {
     @Override
     public Budget update(Budget oldBudget) {
         return budgetDAO.update(oldBudget);
+    }
+
+    @Override
+    public Collection<Budget> createBudgets(List<BudgetUpdateDto> addedBudgets) {
+        return List.of();
     }
 
     @Override

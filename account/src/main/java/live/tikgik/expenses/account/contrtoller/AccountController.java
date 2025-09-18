@@ -13,6 +13,7 @@ import live.tikgik.expenses.shared.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +26,7 @@ import java.util.Map;
 @RequestMapping("/v1/account")
 @RequiredArgsConstructor
 @Slf4j
+@RefreshScope  // Add this
 public class AccountController {
     private final AccountService accountService;
     private final AccountsContactInfoDto accountsContactInfoDto;

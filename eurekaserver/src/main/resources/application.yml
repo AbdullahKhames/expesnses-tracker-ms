@@ -33,3 +33,7 @@ spring:
     port: 5672
     username: guest
     password: guest
+  cloud:
+    config:
+      refresh:
+        enabled: true  # Enable refresh functionality

@@ -40,6 +40,9 @@ spring:
     openfeign:
       circuitbreaker:
         enabled: true
+    config:
+      refresh:
+        enabled: true  # Enable refresh functionality
 #    function:
 #      definition: updateCommunication
 #    stream:

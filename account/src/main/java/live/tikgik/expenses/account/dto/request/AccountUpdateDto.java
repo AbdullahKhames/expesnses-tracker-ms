@@ -18,7 +18,6 @@ import java.util.Set;
 @Builder
 public class AccountUpdateDto {
     @NotNull
-    @AccountName
     private String name;
     private String refNo;
     private String details;

@@ -17,6 +17,8 @@ import live.tikgik.expenses.shared.service.UpdateAssociation;
 import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 public interface BudgetService extends
@@ -46,4 +48,6 @@ public interface BudgetService extends
     ApiResponse getBudgetByName(String name);
 
     Budget update(Budget oldBudget);
+
+    Collection<Budget> createBudgets(List<BudgetUpdateDto> addedBudgets);
 }

@@ -12,14 +12,15 @@ import java.util.Set;
 
 public interface AccountDAO {
     Account create(Account expense);
-    Optional<Account> get(String refNo);
+    Optional<Account> get(String refNo, String customerId);
     Page<Account> findAll(Pageable pageable);
-    List<Account> get();
+    Page<Account> findAll(Pageable pageable, String customerId);
+    List<Account> get(String customerId);
     Account update(Account expense);
-    String delete(String refNo);
-    Set<Account> getEntities(Set<String> refNos);
+    String delete(String refNo, String customerId);
+    Set<Account> getEntities(Set<String> refNos, String customerId);
 
-    List<Account> getByName(String name);
+    List<Account> getByName(String name, String customerId);
 
     Account getDefaultAccount();
 

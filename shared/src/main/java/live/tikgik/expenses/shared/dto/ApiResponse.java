@@ -38,16 +38,8 @@ public class ApiResponse {
         return ApiResponse.builder().isSuccess(true).build();
     }
 
-    public static ApiResponse failed(Exception exception) {
-        List<String> errorMessages = new ArrayList<>();
-        if (exception instanceof ConstraintViolationException ex) {
-            errorMessages = ex.getConstraintViolations().stream().map(ConstraintViolation::getMessage).toList();
-        } else if (exception instanceof MethodArgumentNotValidException ex) {
-            errorMessages = ex.getBindingResult().getFieldErrors().stream().map(FieldError::getDefaultMessage).toList();
-        } else {
-            errorMessages.add(exception.getLocalizedMessage());
-        }
-        return ApiResponse.builder().isSuccess(false).errorMessages(errorMessages).data(exception.getLocalizedMessage()).statusCode(810).build();
+    public static ApiResponse failed(List<String> errorMessages, String localizedMessage) {
+        return ApiResponse.builder().isSuccess(false).errorMessages(errorMessages).data(localizedMessage).statusCode(810).build();
     }
 
     public static ApiResponse failed(List<String> errorMessage) {

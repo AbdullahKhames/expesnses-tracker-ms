@@ -37,6 +37,9 @@ spring:
     username: guest
     password: guest
   cloud:
+    config:
+      refresh:
+        enabled: true  # Enable refresh functionality
     openfeign:
       circuitbreaker:
         enabled: true

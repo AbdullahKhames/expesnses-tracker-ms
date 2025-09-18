@@ -6,6 +6,7 @@ import live.tikgik.expenses.account.config.UserContextHolder;
 import live.tikgik.expenses.account.dao.AccountDAO;
 import live.tikgik.expenses.account.dto.request.AccountReqDto;
 import live.tikgik.expenses.account.dto.request.AccountUpdateDto;
+import live.tikgik.expenses.account.dto.request.BudgetUpdateDto;
 import live.tikgik.expenses.account.dto.response.AccountRespDto;
 import live.tikgik.expenses.account.entity.Account;
 import live.tikgik.expenses.account.entity.Budget;
@@ -41,10 +42,6 @@ public class AccountServiceImpl implements AccountService {
     private final AccountMapper accountMapper;
     private final AccountAssociationManager accountAssociationManager;
     private final BudgetService budgetService;
-    @Override
-    public Account update(Account entity, EntityManager entityManager) {
-        return AccountService.super.update(entity, entityManager);
-    }
 
     @Override
     @Transactional(readOnly = false)
@@ -65,6 +62,8 @@ public class AccountServiceImpl implements AccountService {
         //TODO call customer association ms and add account to customer
         return ApiResponse.getCreateResponse(ACCOUNT.name(), savedAccount.getRefNo(), accountMapper.entityToRespDto(savedAccount));
     }
+
+
 
     @Override
     public ApiResponse addAssociation(String accountRefNo, String budgetRefNo) {
@@ -118,7 +117,7 @@ public class AccountServiceImpl implements AccountService {
         if (name == null || name.isBlank()) {
             return ApiResponse.getErrorResponse(804, "name cannot be null");
         }
-        List<Account> accounts = accountDAO.getByName(name);
+        List<Account> accounts = accountDAO.getByName(name, UserContextHolder.getUser().getId());
         if (!accounts.isEmpty()){
             return ApiResponse.getFetchAllResponse(ACCOUNT, accountMapper.entityToRespDto(accounts));
         }else {
@@ -164,7 +163,7 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public Optional<Account> getEntity(String refNo) {
         try {
-            Optional<Account> accountOptional = accountDAO.get(refNo);
+            Optional<Account> accountOptional = accountDAO.get(refNo, UserContextHolder.getUser().getId());
             log.info("fetched account {}", accountOptional);
             return accountOptional;
 
@@ -174,13 +173,18 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    @Transactional
     public ApiResponse update(String refNo, AccountUpdateDto accountUpdateDto) {
         Optional<Account> accountOptional = getEntity(refNo);
         if (accountOptional.isPresent()){
             Account account = accountOptional.get();
             log.info("fetched account {}", account);
             accountMapper.update(account, accountUpdateDto);
-//            updateAccountService.updateCategoryAssociations(account, accountUpdateDto);
+            List<BudgetUpdateDto> addedBudgets = accountUpdateDto.getBudgets().stream().filter(budgetUpdateDto -> budgetUpdateDto.getRefNo() == null).toList();
+
+            List<String> updatedBudgets = accountUpdateDto.getBudgets().stream().map(BudgetUpdateDto::getRefNo).filter(Objects::nonNull).toList();
+            account.getBudgets().removeIf(budget -> !updatedBudgets.contains(budget.getRefNo()));
+            account.getBudgets().addAll(budgetService.createBudgets(addedBudgets));
             log.info("updated account {}", account);
             account.setUpdatedAt(LocalDateTime.now());
             return ApiResponse.getUpdateResponse(ACCOUNT, account.getRefNo(), accountMapper.entityToRespDto(accountDAO.update(account)));
@@ -195,12 +199,12 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public ApiResponse delete(String refNo) {
-        return ApiResponse.getDeleteResponse(ACCOUNT,accountDAO.delete(refNo));
+        return ApiResponse.getDeleteResponse(ACCOUNT,accountDAO.delete(refNo, UserContextHolder.getUser().getId()));
     }
 
     @Override
     public ApiResponse getAllEntities(Pageable pageable) {
-        Page<Account> accountPage = accountDAO.findAll(pageable);
+        Page<Account> accountPage = accountDAO.findAll(pageable, UserContextHolder.getUser().getId());
         Page<AccountRespDto> accountDtos = accountPage.map(accountMapper::entityToRespDto);
         return ApiResponse.getFetchAllResponse(ACCOUNT, accountDtos);
     }
@@ -210,6 +214,6 @@ public class AccountServiceImpl implements AccountService {
         if (refNos == null || refNos.isEmpty()) {
             return new HashSet<>();
         }
-        return accountDAO.getEntities(refNos);
+        return accountDAO.getEntities(refNos, UserContextHolder.getUser().getId());
     }
 }

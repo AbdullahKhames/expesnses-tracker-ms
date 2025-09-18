@@ -22,19 +22,17 @@ public class Account extends BaseEntity {
     private Long id;
     private String name;
     private String details;
-    @OneToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(referencedColumnName = "id", name = "account_id")
+    // make budgets LAZY and use mappedBy (bidirectional)
+    @OneToMany(mappedBy = "account", fetch = FetchType.LAZY,
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = true)
     private Set<Budget> budgets = new HashSet<>();
+
     @ToString.Exclude
     @JsonIgnore
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "account_customers", joinColumns = @JoinColumn(name = "account_id"))
     @Column(name = "customer_id")
     private Set<String> customerIds = new HashSet<>();
-//    @PreUpdate
-//    protected void onUpdate() {
-//        this.setUpdatedAt(LocalDateTime.now());
-//    }
 
     @Override
     public final boolean equals(Object o) {
