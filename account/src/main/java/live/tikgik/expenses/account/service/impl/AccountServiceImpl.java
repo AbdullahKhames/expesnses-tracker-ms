@@ -1,7 +1,6 @@
 package live.tikgik.expenses.account.service.impl;
 
 
-import jakarta.persistence.EntityManager;
 import live.tikgik.expenses.account.config.UserContextHolder;
 import live.tikgik.expenses.account.dao.AccountDAO;
 import live.tikgik.expenses.account.dto.request.AccountReqDto;
@@ -27,7 +26,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -44,7 +42,7 @@ public class AccountServiceImpl implements AccountService {
     private final BudgetService budgetService;
 
     @Override
-    @Transactional(readOnly = false)
+    @Transactional
     public ApiResponse create(AccountReqDto entityReqDto) {
         Account sentAccount = accountMapper.reqDtoToEntity(entityReqDto);
         String customerId = UserContextHolder.getUser().getId();
@@ -180,13 +178,9 @@ public class AccountServiceImpl implements AccountService {
             Account account = accountOptional.get();
             log.info("fetched account {}", account);
             accountMapper.update(account, accountUpdateDto);
-            List<BudgetUpdateDto> addedBudgets = accountUpdateDto.getBudgets().stream().filter(budgetUpdateDto -> budgetUpdateDto.getRefNo() == null).toList();
-
-            List<String> updatedBudgets = accountUpdateDto.getBudgets().stream().map(BudgetUpdateDto::getRefNo).filter(Objects::nonNull).toList();
-            account.getBudgets().removeIf(budget -> !updatedBudgets.contains(budget.getRefNo()));
-            account.getBudgets().addAll(budgetService.createBudgets(addedBudgets));
+            budgetService.updateBudgets(accountUpdateDto.getBudgets(), account);
             log.info("updated account {}", account);
-            account.setUpdatedAt(LocalDateTime.now());
+//            account.setUpdatedAt(LocalDateTime.now());
             return ApiResponse.getUpdateResponse(ACCOUNT, account.getRefNo(), accountMapper.entityToRespDto(accountDAO.update(account)));
         }
         ResponseError responseError = new ResponseError();
@@ -198,7 +192,9 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    @Transactional
     public ApiResponse delete(String refNo) {
+        budgetService.deleteByAccountRefNo(refNo);
         return ApiResponse.getDeleteResponse(ACCOUNT,accountDAO.delete(refNo, UserContextHolder.getUser().getId()));
     }
 

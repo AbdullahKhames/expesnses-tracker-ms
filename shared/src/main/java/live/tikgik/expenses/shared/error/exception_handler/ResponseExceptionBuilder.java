@@ -5,16 +5,18 @@ import live.tikgik.expenses.shared.dto.ApiResponse;
 import live.tikgik.expenses.shared.error.exception_handler.services.CachableApiError;
 import live.tikgik.expenses.shared.error.exception_handler.services.ExceptionHandlerFactory;
 import live.tikgik.expenses.shared.error.exception_handler.services.ExceptionHandlerStrategy;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 
 @Qualifier
+@Component
+@RequiredArgsConstructor
 public class ResponseExceptionBuilder {
-    @Autowired
-    private CachableApiError cachableApiError;
+    private final CachableApiError cachableApiError;
 
-    @Autowired
-    private ExceptionHandlerFactory exceptionHandlerFactory;
+    private final ExceptionHandlerFactory exceptionHandlerFactory;
 
    public ApiResponse buildResponse(Throwable ex){
        ExceptionHandlerStrategy exceptionHandlerStrategy = exceptionHandlerFactory.getExceptionHandler(ex);

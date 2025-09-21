@@ -13,7 +13,7 @@ import java.util.Set;
 public interface BudgetDAO {
     Budget create(Budget expense);
     Optional<Budget> get(String refNo);
-    Page<Budget> findAll(Pageable pageable);
+    Page<Budget> findAllForCustomer(Pageable pageable);
 
     Page<Budget> findAllWithoutAccount(Pageable pageable);
 
@@ -28,4 +28,6 @@ public interface BudgetDAO {
     Budget update(Budget expense);
 
     List<Budget> getByName(String name);
+
+    void deleteByAccountRefNo(String refNo);
 }

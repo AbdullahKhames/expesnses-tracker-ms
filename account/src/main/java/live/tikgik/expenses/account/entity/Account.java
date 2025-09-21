@@ -22,9 +22,9 @@ public class Account extends BaseEntity {
     private Long id;
     private String name;
     private String details;
-    // make budgets LAZY and use mappedBy (bidirectional)
     @OneToMany(mappedBy = "account", fetch = FetchType.LAZY,
-            cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = true)
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE}, orphanRemoval = true)
+    @ToString.Exclude
     private Set<Budget> budgets = new HashSet<>();
 
     @ToString.Exclude

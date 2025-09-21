@@ -3,8 +3,8 @@ package live.tikgik.expenses.account.dao.impl;
 
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.NonUniqueResultException;
+import live.tikgik.expenses.account.config.UserContextHolder;
 import live.tikgik.expenses.account.dao.BudgetDAO;
-import live.tikgik.expenses.account.entity.Account;
 import live.tikgik.expenses.account.entity.Budget;
 import live.tikgik.expenses.account.repository.BudgetRepository;
 import live.tikgik.expenses.shared.error.exception.GeneralFailureException;
@@ -12,30 +12,24 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 
-@Transactional
 @RequiredArgsConstructor
 @Service
 public class BudgetDAOImpl implements BudgetDAO {
-
-//    @PersistenceContext(unitName = "expenses-unit")
-//    private EntityManager entityManager;
     private final BudgetRepository budgetRepository;
+
+    @Override
+    public void deleteByAccountRefNo(String refNo) {
+        budgetRepository.deleteByAccount_RefNo(refNo);
+    }
 
     @Override
     public Budget create(Budget Budget) {
         try{
-//            if (Budget.getId() != null && entityManager.find(Budget.class, Budget.getId()) != null) {
-//                return entityManager.merge(Budget);
-//            } else {
-//                entityManager.persist(Budget);
-//                return Budget;
-//            }
             return budgetRepository.save(Budget);
         }catch (Exception ex){
             throw new GeneralFailureException(GeneralFailureException.ERROR_PERSISTING,
@@ -47,10 +41,7 @@ public class BudgetDAOImpl implements BudgetDAO {
     @Override
     public Optional<Budget> get(String refNo) {
         try {
-//            TypedQuery<Budget> BudgetTypedQuery = entityManager.createQuery("SELECT e from Budget e WHERE e.refNo = :refNo", Budget.class);
-//            BudgetTypedQuery.setParameter("refNo", refNo);
-//            return Optional.ofNullable(BudgetTypedQuery.getSingleResult());
-            return budgetRepository.findByRefNo(refNo);
+            return budgetRepository.findByRefNoAndCustomerId(refNo, UserContextHolder.getUser().getId());
         }catch (NoResultException ex){
             return Optional.empty();
         }catch (NonUniqueResultException ex){
@@ -64,35 +55,9 @@ public class BudgetDAOImpl implements BudgetDAO {
     }
 
     @Override
-    public Page<Budget> findAll(Pageable pageable) {
-//        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-//        CriteriaQuery<Budget> query = cb.createQuery(Budget.class);
-//        Root<Budget> root = query.from(Budget.class);
-//
-//        query.select(root);
-//
-//        Path<Object> sortByPath;
-//        if (FieldValidator.hasField(sortBy, Budget.class)) {
-//            sortByPath = root.get(sortBy);
-//        }else {
-//            sortByPath = root.get("id");
-//        }
-//
-//        if (sortDirection == SortDirection.ASC) {
-//            query.orderBy(cb.asc(sortByPath));
-//        } else {
-//            query.orderBy(cb.desc(sortByPath));
-//        }
+    public Page<Budget> findAllForCustomer(Pageable pageable) {
         try {
-//            TypedQuery<Budget> typedQuery = entityManager.createQuery(query);
-//            typedQuery.setFirstResult((int) ((pageNumber - 1) * pageSize));
-//            typedQuery.setMaxResults(Math.toIntExact(pageSize));
-//            List<Budget> Budgets = typedQuery.getResultList();
-//            CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
-//            countQuery.select(cb.count(countQuery.from(Budget.class)));
-//            Long totalElements = entityManager.createQuery(countQuery).getSingleResult();
-//            return PageUtil.createPage(pageNumber, pageSize, Budgets, totalElements);
-            return budgetRepository.findAll(pageable);
+            return budgetRepository.findByCustomerId(UserContextHolder.getUser().getId(), pageable);
         }catch (Exception exception){
             throw new GeneralFailureException(GeneralFailureException.ERROR_FETCH,
                     Map.of("original message", exception.getMessage().substring(0, 15),
@@ -103,9 +68,6 @@ public class BudgetDAOImpl implements BudgetDAO {
     @Override
     public Page<Budget> findAllWithoutAccount(Pageable pageable) {
         try {
-//            TypedQuery<Budget> typedQuery = entityManager.createQuery("SELECT p FROM Budget p WHERE p.account is null", Budget.class);
-//            List<Budget> Budgets = typedQuery.getResultList();
-//            return PageUtil.createPage(pageNumber, pageSize, Budgets, Budgets.size());
             return budgetRepository.findAllWithoutAccount(pageable);
 
         } catch (Exception exception) {
@@ -116,8 +78,7 @@ public class BudgetDAOImpl implements BudgetDAO {
     }
     @Override
     public List<Budget> get() {
-//        return entityManager.createQuery("SELECT e FROM Budget e", Budget.class).getResultList();
-        return budgetRepository.findAll();
+        return budgetRepository.findByCustomerId(UserContextHolder.getUser().getId(), Pageable.unpaged()).getContent();
     }
 
 
@@ -125,12 +86,6 @@ public class BudgetDAOImpl implements BudgetDAO {
     @Override
     public String delete(String refNo) {
         try {
-//            TypedQuery<Budget> BudgetTypedQuery = entityManager.createQuery("SELECT e from Budget e WHERE e.refNo = :refNo", Budget.class);
-//            BudgetTypedQuery.setParameter("refNo", refNo);
-//            Budget Budget = BudgetTypedQuery.getSingleResult();
-//            if (Budget != null) {
-//                entityManager.remove(Budget);
-//            }
             budgetRepository.deleteByRefNo(refNo);
             return refNo;
         }catch (Exception ex){
@@ -143,9 +98,6 @@ public class BudgetDAOImpl implements BudgetDAO {
     @Override
     public Long checkAccountAssociation(Budget Budget) {
         try{
-//            TypedQuery<Account> query = entityManager.createQuery("SELECT c FROM Account c JOIN c.budgets s WHERE s.id = :id", Account.class);
-//            query.setParameter("id", Budget.getId());
-//            account = query.getSingleResult();
             return budgetRepository.findAccountById(Budget.getId());
         }catch (Exception ex){
             return null;
@@ -157,12 +109,7 @@ public class BudgetDAOImpl implements BudgetDAO {
         if (refNos == null || refNos.isEmpty()) {
             return new HashSet<>();
         }
-
-//        TypedQuery<Budget> query = entityManager.createQuery(
-//                "SELECT a FROM Budget a WHERE a.refNo IN :refNos", Budget.class);
-//        query.setParameter("refNos", refNos);
-//        return new HashSet<>(query.getResultList());
-        return budgetRepository.findByRefNoIn(refNos);
+        return budgetRepository.findByRefNoInAndCustomerId(refNos, UserContextHolder.getUser().getId());
     }
 
     @Override
@@ -171,27 +118,19 @@ public class BudgetDAOImpl implements BudgetDAO {
         if (Budgets != null && !Budgets.isEmpty()) {
             for (Budget Budget : Budgets) {
                 if (Budget != null && Budget.getId() != null) {
-//                    entityManager.persist(Budget);
                     budgetRepository.save(Budget);
                     savedBudgets.add(Budget);
                 }
             }
-//            entityManager.flush();
-//            entityManager.clear();
         }
         return savedBudgets;
     }
     @Override
     public Budget update(Budget Budget) {
         try {
-//            entityManager.getTransaction().begin();
-//            Budget updatedBudget = entityManager.merge(Budget);
-//            entityManager.getTransaction().commit();
-//            return updatedBudget;
             return budgetRepository.save(Budget);
 
         }catch (Exception ex){
-//            entityManager.getTransaction().rollback();
             throw new GeneralFailureException(GeneralFailureException.ERROR_UPDATE,
                     Map.of("original error message", ex.getMessage().substring(0, 15),
                             "error", "there was an error with your request couldn't update entity"));
@@ -201,10 +140,7 @@ public class BudgetDAOImpl implements BudgetDAO {
     @Override
     public List<Budget> getByName(String name) {
         try {
-//            TypedQuery<Budget> categoryTypedQuery = entityManager.createQuery("SELECT e from Budget e WHERE e.name like :name", Budget.class);
-//            categoryTypedQuery.setParameter("name", "%" + name + "%");
-//            return categoryTypedQuery.getResultList();
-            return budgetRepository.findByName(name);
+            return budgetRepository.findByNameAndCustomerId(name, UserContextHolder.getUser().getId());
         }catch (NoResultException ex){
             return Collections.emptyList();
         }catch (NonUniqueResultException ex){

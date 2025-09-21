@@ -1,9 +1,11 @@
 package live.tikgik.expenses.account.mapper;
 
 
+import live.tikgik.expenses.account.config.UserContextHolder;
 import live.tikgik.expenses.account.dto.request.BudgetReqDto;
 import live.tikgik.expenses.account.dto.request.BudgetUpdateDto;
 import live.tikgik.expenses.account.dto.response.BudgetRespDto;
+import live.tikgik.expenses.account.entity.Account;
 import live.tikgik.expenses.account.entity.Budget;
 import org.mapstruct.*;
 import org.springframework.data.domain.Page;
@@ -70,5 +72,12 @@ public abstract class BudgetMapper {
             }
 
     )
-    public abstract Budget reqEntityToEntity(BudgetUpdateDto newBudget);
+    public abstract Budget reqEntityToEntity(BudgetUpdateDto newBudget, @Context Account account);
+    public abstract List<Budget> reqEntityToEntity(List<BudgetUpdateDto> newBudget, @Context Account account);
+
+    @AfterMapping
+    public void afterMapping(@MappingTarget Budget entity, BudgetUpdateDto entityUpdateDto, @Context Account account){
+        entity.setAccount(account);
+        entity.setCustomerId(UserContextHolder.getUser().getId());
+    }
 }

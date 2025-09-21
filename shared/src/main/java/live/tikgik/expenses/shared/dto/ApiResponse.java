@@ -1,7 +1,5 @@
 package live.tikgik.expenses.shared.dto;
 
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.ConstraintViolationException;
 import live.tikgik.expenses.shared.enums.Models;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,13 +7,9 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.domain.Page;
-import org.springframework.validation.FieldError;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Getter
 @Setter

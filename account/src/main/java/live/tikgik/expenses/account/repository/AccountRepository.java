@@ -21,7 +21,9 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
     @Modifying
     @Query("delete from Account a where a.refNo = :refNo and :customerId member of a.customerIds")
     void deleteByRefNoAndCustomerId(@Param("refNo") String refNo, @Param("customerId") String customerId);
-
+    @Modifying
+    @Query("delete from Account a where a.refNo = :refNo")
+    void deleteByRefNo(@Param("refNo") String refNo);
     @Query("select a from Account a where a.refNo in :refNos")
     Set<Account> findAllByRefNoIn(@Param("refNos") Set<String> refNos);
 

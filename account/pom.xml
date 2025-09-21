@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.5.5</version>
+		<version>3.5.6</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>live.tikgik.expenses</groupId>
@@ -27,10 +27,12 @@
 		<url/>
 	</scm>
 	<properties>
-		<java.version>21</java.version>
+		<java.version>25</java.version>
+        <maven.compiler.source>25</maven.compiler.source>
+        <maven.compiler.target>25</maven.compiler.target>
 		<spring-cloud.version>2025.0.0</spring-cloud.version>
         <org.mapstruct.version>1.6.3</org.mapstruct.version>
-        <org.projectlombok.version>1.18.32</org.projectlombok.version>
+        <org.projectlombok.version>1.18.42</org.projectlombok.version>
         <org.projectlombok.mapstruct>0.2.0</org.projectlombok.mapstruct>
         <otelVersion>2.11.0</otelVersion>
 	</properties>
@@ -82,6 +84,8 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
+            <version>${org.projectlombok.version}</version>
+            <scope>provided</scope>
 			<optional>true</optional>
 		</dependency>
         <dependency>

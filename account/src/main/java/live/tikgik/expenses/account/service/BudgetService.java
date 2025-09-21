@@ -49,5 +49,8 @@ public interface BudgetService extends
 
     Budget update(Budget oldBudget);
 
-    Collection<Budget> createBudgets(List<BudgetUpdateDto> addedBudgets);
+
+    void updateBudgets(Set<BudgetUpdateDto> updateDtoBudgets, Account account);
+
+    void deleteByAccountRefNo(String refNo);
 }

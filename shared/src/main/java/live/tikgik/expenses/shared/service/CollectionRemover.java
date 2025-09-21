@@ -8,7 +8,7 @@ import java.util.Set;
 
 public interface CollectionRemover  <T> {
     boolean removeAssociation(T entity, Models entityModel, String refNo);
-    ApiResponse removeAssociation(Object entity, Models entityModel, Set<String> refNo);
-    ApiResponse removeDtoAssociation(Object entity, Models entityModel, Set<?> associationsUpdateDto);
+//    ApiResponse removeAssociation(Object entity, Models entityModel, Set<String> refNo);
+//    ApiResponse removeDtoAssociation(Object entity, Models entityModel, Set<?> associationsUpdateDto);
 
 }

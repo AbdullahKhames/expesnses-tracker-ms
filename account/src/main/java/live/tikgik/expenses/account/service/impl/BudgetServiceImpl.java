@@ -33,7 +33,7 @@ import java.util.*;
 
 @Slf4j
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 @Service
 public class BudgetServiceImpl implements BudgetService {
     public static final String BUDGET = "Budget";
@@ -41,10 +41,9 @@ public class BudgetServiceImpl implements BudgetService {
     private final BudgetMapper budgetMapper;
     private final AccountDAO accountDAO;
 
-
     @Override
-    public Budget update(Budget entity, EntityManager entityManager) {
-        return BudgetService.super.update(entity, entityManager);
+    public void deleteByAccountRefNo(String refNo) {
+        budgetDAO.deleteByAccountRefNo(refNo);
     }
 
     @Override
@@ -52,6 +51,7 @@ public class BudgetServiceImpl implements BudgetService {
         return new Budget(budgetType.name() + " budget for " + sentAccount.getName(), BigDecimal.ZERO, budgetType, defaultReceiver, defaultSender, sentAccount, customerId);
     }
     @Override
+    @Transactional
     public ApiResponse create(BudgetReqDto budgetReqDto) {
         try {
             Budget sentBudget = budgetMapper.reqDtoToEntity(budgetReqDto);
@@ -66,7 +66,6 @@ public class BudgetServiceImpl implements BudgetService {
     }
 
     @Override
-    @Transactional
     public void associateAccount(String accountRefNo, Budget sentBudget) {
         Optional<Account> accountOptional = accountDAO.get(accountRefNo, UserContextHolder.getUser().getId());
         if (accountOptional.isEmpty()){
@@ -79,7 +78,6 @@ public class BudgetServiceImpl implements BudgetService {
             }
             account.getBudgets().add(sentBudget);
             sentBudget.setAccount(account);
-            accountDAO.update(account);
         }
     }
 
@@ -117,6 +115,7 @@ public class BudgetServiceImpl implements BudgetService {
     }
 
     @Override
+    @Transactional
     public ApiResponse update(String refNo, BudgetUpdateDto budgetUpdateDto) {
         Optional<Budget> budgetOptional = getEntity(refNo);
         if (budgetOptional.isPresent()){
@@ -145,27 +144,29 @@ public class BudgetServiceImpl implements BudgetService {
         return budget;
     }
     @Override
+    @Transactional
     public ApiResponse delete(String refNo) {
         return ApiResponse.getDeleteResponse(BUDGET,budgetDAO.delete(refNo));
     }
 
     @Override
     public ApiResponse getAllEntities(Pageable pageable) {
-        Page<Budget> BudgetPage = budgetDAO.findAll(pageable);
-        Page<BudgetRespDto> BudgetDtos = BudgetPage.map(budgetMapper::entityToRespDto);
-        return ApiResponse.getFetchAllResponse(BUDGET, BudgetDtos);
+        Page<Budget> budgetPage = budgetDAO.findAllForCustomer(pageable);
+        Page<BudgetRespDto> budgetDtos = budgetPage.map(budgetMapper::entityToRespDto);
+        return ApiResponse.getFetchAllResponse(BUDGET, budgetDtos);
     }
 
     @Override
+    @Transactional
     public Set<Budget> updateAll(Set<Budget> Budgets) {
         return budgetDAO.updateAll(Budgets);
     }
 
     @Override
     public ApiResponse getAllEntitiesWithoutAccount(Pageable pageable) {
-        Page<Budget> BudgetPage = budgetDAO.findAllWithoutAccount(pageable);
-        Page<BudgetRespDto> BudgetDtos = BudgetPage.map(budgetMapper::entityToRespDto);
-        return ApiResponse.getFetchAllResponse(BUDGET, BudgetDtos);
+        Page<Budget> budgetPage = budgetDAO.findAllWithoutAccount(pageable);
+        Page<BudgetRespDto> budgetDtos = budgetPage.map(budgetMapper::entityToRespDto);
+        return ApiResponse.getFetchAllResponse(BUDGET, budgetDtos);
     }
 
     @Override
@@ -191,10 +192,28 @@ public class BudgetServiceImpl implements BudgetService {
         return budgetDAO.update(oldBudget);
     }
 
-    @Override
-    public Collection<Budget> createBudgets(List<BudgetUpdateDto> addedBudgets) {
-        return List.of();
+    public Collection<Budget> createBudgets(List<BudgetUpdateDto> addedBudgets, Account account) {
+        return budgetMapper.reqEntityToEntity(addedBudgets, account);
     }
+
+    @Override
+    public void updateBudgets(Set<BudgetUpdateDto> updateDtoBudgets, Account account) {
+        List<BudgetUpdateDto> addedBudgets = new ArrayList<>();
+        Map<String, BudgetUpdateDto> updatedBudgets = new HashMap<>();
+        updateDtoBudgets.forEach(budgetUpdateDto -> {
+            if (budgetUpdateDto != null) {
+                if (budgetUpdateDto.getRefNo() == null) {
+                    addedBudgets.add(budgetUpdateDto);
+                } else {
+                    updatedBudgets.put(budgetUpdateDto.getRefNo(), budgetUpdateDto);
+                }
+            }
+        });
+        account.getBudgets().removeIf(budget -> !updatedBudgets.containsKey(budget.getRefNo()));
+        account.getBudgets().forEach(budget -> budgetMapper.update(budget, updatedBudgets.get(budget.getRefNo())));
+        account.getBudgets().addAll(this.createBudgets(addedBudgets, account));
+    }
+
 
     @Override
     public Set<Budget> getEntities(Set<String> refNos) {
@@ -253,28 +272,28 @@ public class BudgetServiceImpl implements BudgetService {
         return false;
     }
 
-    @Override
-    public ApiResponse removeDtoAssociation(Object entity, Models entityModel, Set<?> associationsUpdateDto) {
-        ApiResponse errorResponse = ValidateInputUtils.validateWildCardSet(associationsUpdateDto, BudgetUpdateDto.class);
-        if (errorResponse != null) {
-            return errorResponse;
-        }
-        try {
-            Set<Budget> budgets = new HashSet<>();
-            for (Object obj : associationsUpdateDto) {
-                BudgetUpdateDto BudgetUpdateDto = (BudgetUpdateDto) obj;
-                Optional<Budget> budgetOptional = getEntity(BudgetUpdateDto.getRefNo());
-                if (budgetOptional.isPresent())
-                    budgets.add(budgetOptional.get());
-                else {
-                    budgets.add(budgetMapper.reqEntityToEntity(BudgetUpdateDto));
-                }
-            }
-        }catch (Exception ex){
-            return ApiResponse.getErrorResponse(810, "error processing your request");
-        }
-        return null;
-    }
+//    @Override
+//    public ApiResponse removeDtoAssociation(Object entity, Models entityModel, Set<?> associationsUpdateDto) {
+//        ApiResponse errorResponse = ValidateInputUtils.validateWildCardSet(associationsUpdateDto, BudgetUpdateDto.class);
+//        if (errorResponse != null) {
+//            return errorResponse;
+//        }
+//        try {
+//            Set<Budget> budgets = new HashSet<>();
+//            for (Object obj : associationsUpdateDto) {
+//                BudgetUpdateDto BudgetUpdateDto = (BudgetUpdateDto) obj;
+//                Optional<Budget> budgetOptional = getEntity(BudgetUpdateDto.getRefNo());
+//                if (budgetOptional.isPresent())
+//                    budgets.add(budgetOptional.get());
+//                else {
+//                    budgets.add(budgetMapper.reqEntityToEntity(BudgetUpdateDto));
+//                }
+//            }
+//        }catch (Exception ex){
+//            return ApiResponse.getErrorResponse(810, "error processing your request");
+//        }
+//        return null;
+//    }
 
 
 
@@ -284,7 +303,7 @@ public class BudgetServiceImpl implements BudgetService {
             Set<Budget> existingBudgets = entity.getBudgets();
             Set<BudgetUpdateDto> budgetUpdateDtos = entityUpdateDto.getBudgets();
             //new Budget will contain only the new Budget ie the one not included with refs
-            Set<Budget> newBudgets = getBudgets(budgetUpdateDtos, existingBudgets);
+            Set<Budget> newBudgets = getBudgets(budgetUpdateDtos, existingBudgets, entity);
             //remove non existent in the new collection
             Set<Budget> removedBudgets = new HashSet<>(existingBudgets);
             List<String> newListRefs = budgetUpdateDtos.stream().map(BudgetUpdateDto::getRefNo).toList();
@@ -293,36 +312,36 @@ public class BudgetServiceImpl implements BudgetService {
             entity.getBudgets().addAll(newBudgets);
         }
     }
-    private Set<Budget> getBudgets (Set<BudgetUpdateDto> BudgetUpdateDtos, Set < Budget > existingBudgets){
+    private Set<Budget> getBudgets (Set<BudgetUpdateDto> BudgetUpdateDtos, Set < Budget > existingBudgets, Account entity){
         Set<Budget> addedSubCategories = new HashSet<>();
         BudgetUpdateDtos.forEach(newBudget -> {
             if (newBudget.getRefNo() != null) {
                 Budget existingBudget = findExistingEntity(existingBudgets, newBudget.getRefNo());
                 if (existingBudget != null) {
                     budgetMapper.update(existingBudget, newBudget);
-                    existingBudget.setUpdatedAt(LocalDateTime.now());
+//                    existingBudget.setUpdatedAt(LocalDateTime.now());
                 }
             } else {
                 //if id doesn't have id add it
-                addedSubCategories.add(budgetMapper.reqEntityToEntity(newBudget));
+                addedSubCategories.add(budgetMapper.reqEntityToEntity(newBudget, entity));
             }
         });
         return addedSubCategories;
     }
-    @Override
-    public ApiResponse addAssociation(Object entity, Models entityModel, Set<String> refNos) {
-        return null;
-    }
-
-    @Override
-    public ApiResponse addDtoAssociation(Object entity, Models entityModel, Set<?> associationUpdateDto) {
-        return null;
-    }
-
-    @Override
-    public ApiResponse removeAssociation(Object entity, Models entityModel, Set<String> refNo) {
-        return null;
-    }
+//    @Override
+//    public ApiResponse addAssociation(Object entity, Models entityModel, Set<String> refNos) {
+//        return null;
+//    }
+//
+//    @Override
+//    public ApiResponse addDtoAssociation(Object entity, Models entityModel, Set<?> associationUpdateDto) {
+//        return null;
+//    }
+//
+//    @Override
+//    public ApiResponse removeAssociation(Object entity, Models entityModel, Set<String> refNo) {
+//        return null;
+//    }
 
     private Budget findExistingEntity (Set < Budget > existingBudgets, String refNo){
         return existingBudgets.stream().filter(budget -> budget.getRefNo().equals(refNo)).findFirst().orElse(null);

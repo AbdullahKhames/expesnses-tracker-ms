@@ -14,19 +14,24 @@ import java.util.Optional;
 import java.util.Set;
 
 public interface BudgetRepository extends JpaRepository<Budget, Long> {
-    Optional<Budget> findByRefNo(String refNo);
-
     @Query("SELECT p FROM Budget p WHERE p.account is null")
     Page<Budget> findAllWithoutAccount(Pageable pageable);
 
     @Modifying
-    @Transactional
     void deleteByRefNo(String refNo);
 
-    List<Budget> findByName(String name);
+    List<Budget> findByNameAndCustomerId(String name, String customerId);
 
-    Set<Budget> findByRefNoIn(Set<String> refNos);
+    Set<Budget> findByRefNoInAndCustomerId(Set<String> refNos, String customerId);
 
     @Query("SELECT c.id FROM Account c JOIN c.budgets s WHERE s.id = :id")
     Long findAccountById(Long id);
+
+    Optional<Budget> findByRefNoAndCustomerId(String refNo, String customerId);
+
+    Page<Budget> findByCustomerId(String customerId, Pageable pageable);
+
+    @Modifying
+    @Query("delete from Budget b where b.account.refNo = :refNo")
+    void deleteByAccount_RefNo(String refNo);
 }

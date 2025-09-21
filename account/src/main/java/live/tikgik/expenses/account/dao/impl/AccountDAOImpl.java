@@ -95,7 +95,7 @@ public class AccountDAOImpl implements AccountDAO {
     @Override
     public String delete(String refNo, String customerId) {
         try {
-            accountRepository.deleteByRefNoAndCustomerId(refNo, customerId);
+            accountRepository.deleteByRefNo(refNo);
             return refNo;
         } catch (Exception ex) {
             throw new GeneralFailureException(GeneralFailureException.ERROR_DELETE,
