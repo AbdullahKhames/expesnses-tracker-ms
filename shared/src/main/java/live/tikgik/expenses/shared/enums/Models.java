@@ -6,7 +6,7 @@ public enum Models {
     CUSTOMER,
     SUB_CATEGORY,
     EXPENSE,
-    Budget,
+    BUDGET,
     TRANSACTION,
     Budget_TRANSFER;
 }

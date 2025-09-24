@@ -1,5 +1,10 @@
 package live.tikgik.expenses.shared.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import live.tikgik.expenses.shared.enums.Models;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,6 +25,9 @@ public class ApiResponse {
     private Boolean isSuccess;
     private List<String> errorMessages;
     @Builder.Default
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime time = LocalDateTime.now();
     private int statusCode;
     private Object data;

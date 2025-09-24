@@ -2,7 +2,7 @@ package live.tikgik.expenses.account.contrtoller;
 
 import live.tikgik.expenses.account.dto.request.BudgetReqDto;
 import live.tikgik.expenses.account.dto.request.BudgetUpdateDto;
-import live.tikgik.expenses.account.service.BudgetService;
+import live.tikgik.expenses.account.manager.BudgetManager;
 import live.tikgik.expenses.shared.dto.ApiResponse;
 import live.tikgik.expenses.shared.error.exception_handler.ResponseExceptionBuilder;
 import lombok.RequiredArgsConstructor;
@@ -17,30 +17,31 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RestController
 public class BudgetController {
-    private final BudgetService budgetService;
+    private final BudgetManager manager;
     private final ResponseExceptionBuilder responseExceptionBuilder;
 
     @PostMapping
-    public ResponseEntity<ApiResponse> createBudget(@RequestBody BudgetReqDto request){
+    public ResponseEntity<ApiResponse> createBudget(@RequestBody BudgetReqDto request) {
         try {
-            return ResponseEntity.ok(budgetService.create(request));
+            return ResponseEntity.ok(manager.create(request));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(responseExceptionBuilder.buildResponse(e));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseExceptionBuilder.buildResponse(e));
         }
     }
+
     @GetMapping("/refNo/{refNo}")
     public ResponseEntity<ApiResponse> getBudget(@PathVariable("refNo") String refNo) {
-        ApiResponse responseDto = budgetService.get(refNo);
+        ApiResponse responseDto = manager.get(refNo);
         if (responseDto != null) {
             return ResponseEntity.ok(responseDto);
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
+
     @GetMapping("/name/{name}")
     public ResponseEntity<ApiResponse> getBudgetByName(@PathVariable("name") String name) {
-        ApiResponse responseDto = budgetService.getBudgetByName(name);
+        ApiResponse responseDto = manager.getBudgetByName(name);
         if (responseDto != null) {
             return ResponseEntity.ok(responseDto);
         } else {
@@ -49,45 +50,31 @@ public class BudgetController {
     }
 
     @PutMapping("/{refNo}")
-    public ResponseEntity<ApiResponse> updateBudget(@PathVariable("refNo") String refNo, @RequestBody  BudgetUpdateDto request) {
+    public ResponseEntity<ApiResponse> updateBudget(@PathVariable("refNo") String refNo, @RequestBody BudgetUpdateDto request) {
         try {
-//            ObjectMapper objectMapper = new ObjectMapper();
-//            BudgetUpdateDto request = objectMapper.readValue(rawRequestBody, BudgetUpdateDto.class);
-            return ResponseEntity.ok(budgetService.update(refNo, request));
+            return ResponseEntity.ok(manager.update(refNo, request));
         } catch (Exception e) {
             // Handle the deserialization error here...
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(responseExceptionBuilder.buildResponse(e));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseExceptionBuilder.buildResponse(e));
         }
     }
 
     @DeleteMapping("/{refNo}")
     public ResponseEntity<ApiResponse> deleteBudget(@PathVariable("refNo") String refNo) {
-        ApiResponse responseDto = budgetService.delete(refNo);
+        ApiResponse responseDto = manager.delete(refNo);
         return ResponseEntity.ok(responseDto);
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse> getAllEntities(
-            /*@DefaultValue("1") @QueryParam("page") Long pageNumber,
-            @DefaultValue("10") @QueryParam("per_page") Long pageSize,
-            @DefaultValue("id") @QueryParam("sortBy") String sortBy,
-            @QueryParam("sortDirection") String direction,*/
-            Pageable pageable) {
-//        SortDirection sortDirection = PageUtil.getSortDirection(direction);
-        ApiResponse responseDto = budgetService.getAllEntities(pageable);
+    public ResponseEntity<ApiResponse> getAllEntities(Pageable pageable) {
+        ApiResponse responseDto = manager.getAllEntities(pageable);
         return ResponseEntity.ok(responseDto);
 
     }
+
     @GetMapping("/noAccount")
-    public ResponseEntity<ApiResponse> getAllEntitiesWithoutAccount(
-/*            @DefaultValue("1") @QueryParam("page") Long pageNumber,
-            @DefaultValue("10") @QueryParam("per_page") Long pageSize,
-            @DefaultValue("id") @QueryParam("sortBy") String sortBy,
-            @QueryParam("sortDirection") String direction,*/
-            Pageable pageable) {
-//        SortDirection sortDirection = PageUtil.getSortDirection(direction);
-        ApiResponse responseDto = budgetService.getAllEntitiesWithoutAccount(pageable);
+    public ResponseEntity<ApiResponse> getAllEntitiesWithoutAccount(Pageable pageable) {
+        ApiResponse responseDto = manager.getAllEntitiesWithoutAccount(pageable);
         return ResponseEntity.ok(responseDto);
 
     }

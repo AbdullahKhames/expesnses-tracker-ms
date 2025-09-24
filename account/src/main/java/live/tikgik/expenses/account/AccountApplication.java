@@ -16,7 +16,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 @EnableFeignClients
 @EnableAspectJAutoProxy
 @EntityScan({"live.tikgik.expenses.shared.model", "live.tikgik.expenses.account.entity"})
-@ComponentScan(basePackages = {"live.tikgik.expenses.account", "live.tikgik.expenses.shared.error.exception_handler"})
+@ComponentScan(basePackages = {"live.tikgik.expenses.account", "live.tikgik.expenses.shared.utility", "live.tikgik.expenses.shared.error.exception_handler"})
 public class AccountApplication {
 
 	public static void main(String[] args) {

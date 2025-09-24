@@ -12,6 +12,7 @@ public enum AppConstants {
     X_USER_NAME("X-Username"),
     X_EMAIL("X-Email"),
     X_ROLES("X-Roles"),
+    REF_NO("refNo"),
 
     SYMBOL_WHITESPACE(" "),
 

@@ -28,7 +28,7 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
     Set<Account> findAllByRefNoIn(@Param("refNos") Set<String> refNos);
 
     @EntityGraph(attributePaths = {"budgets"})
-    @Query("select distinct a from Account a join a.customerIds cid where a.name like :name and cid = :customerId")
+    @Query("select distinct a from Account a join a.customerIds cid where upper(a.name) like upper(:name) and cid = :customerId")
     List<Account> findAllByNameLikeAndCustomerId(@Param("name") String name, @Param("customerId") String customerId);
 
     @EntityGraph(attributePaths = {"budgets"})

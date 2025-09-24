@@ -1,13 +1,11 @@
 package live.tikgik.expenses.account.repository;
 
-import live.tikgik.expenses.account.entity.Account;
 import live.tikgik.expenses.account.entity.Budget;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,7 +18,7 @@ public interface BudgetRepository extends JpaRepository<Budget, Long> {
     @Modifying
     void deleteByRefNo(String refNo);
 
-    List<Budget> findByNameAndCustomerId(String name, String customerId);
+    List<Budget> findByNameLikeIgnoreCaseAndCustomerId(String name, String customerId);
 
     Set<Budget> findByRefNoInAndCustomerId(Set<String> refNos, String customerId);
 

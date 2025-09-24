@@ -2,7 +2,6 @@ package live.tikgik.expenses.shared.error.exception_handler.services;
 
 
 import jakarta.validation.ConstraintViolationException;
-import live.tikgik.expenses.shared.error.exception.ApiValidationException;
 import live.tikgik.expenses.shared.error.exception.CustomException;
 import live.tikgik.expenses.shared.error.exception_handler.handlers.*;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +14,6 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 @Slf4j
 @RequiredArgsConstructor
 public class ExceptionHandlerFactory {
-    private final ApiValidationExceptionHandler apiValidationExceptionHandler;
     private final CustomExceptionHandler customExceptionHandler;
     private final GeneralExceptionHandler generalExceptionHandler;
     private final ConstraintViolationExceptionHandler constraintViolationExceptionHandler;
@@ -25,9 +23,6 @@ public class ExceptionHandlerFactory {
         try{
             switch (throwable) {
 
-                case ApiValidationException apiValidationException -> {
-                    return apiValidationExceptionHandler;
-                }
                 case CustomException customException -> {
                     return customExceptionHandler;
                 }

@@ -3,7 +3,7 @@ package live.tikgik.expenses.account.dao.impl;
 
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.NonUniqueResultException;
-import live.tikgik.expenses.account.config.UserContextHolder;
+import live.tikgik.expenses.shared.model.UserContextHolder;
 import live.tikgik.expenses.account.dao.BudgetDAO;
 import live.tikgik.expenses.account.entity.Budget;
 import live.tikgik.expenses.account.repository.BudgetRepository;
@@ -140,12 +140,7 @@ public class BudgetDAOImpl implements BudgetDAO {
     @Override
     public List<Budget> getByName(String name) {
         try {
-            return budgetRepository.findByNameAndCustomerId(name, UserContextHolder.getUser().getId());
-        }catch (NoResultException ex){
-            return Collections.emptyList();
-        }catch (NonUniqueResultException ex){
-            throw new GeneralFailureException(GeneralFailureException.NON_UNIQUE_IDENTIFIER,
-                    Map.of("error", String.format("the query didn't return a single result for reference number %s", name)));
+            return budgetRepository.findByNameLikeIgnoreCaseAndCustomerId("%" + name + "%", UserContextHolder.getUser().getId());
         }catch (Exception ex){
             throw new GeneralFailureException(GeneralFailureException.OBJECT_NOT_FOUND,
                     Map.of("original error message", ex.getMessage(),

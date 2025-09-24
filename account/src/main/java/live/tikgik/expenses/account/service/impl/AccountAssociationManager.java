@@ -28,10 +28,10 @@ public class AccountAssociationManager {
 
     @PostConstruct
     private void init(){
-        adderHandler.put(Models.Budget, budgetService);
+        adderHandler.put(Models.BUDGET, budgetService);
 
 
-        removerHandler.put(Models.Budget, budgetService);
+        removerHandler.put(Models.BUDGET, budgetService);
 
 
     }

@@ -142,3 +142,12 @@ resilience4j.ratelimiter:
 #  onCallSupport:
 #    - (555) 555-1234
 #    - (555) 523-1345
+
+swagger:
+  mock:
+    user:
+      id: 123
+      name: khames
+      email: khames@example.com
+      roles: USER,ADMIN
+    enabled: true

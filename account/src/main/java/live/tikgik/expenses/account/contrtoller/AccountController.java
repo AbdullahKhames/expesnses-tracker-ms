@@ -3,12 +3,11 @@ package live.tikgik.expenses.account.contrtoller;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.github.resilience4j.retry.annotation.Retry;
 import jakarta.validation.Valid;
-import jakarta.ws.rs.*;
 import live.tikgik.expenses.account.aop.ToLog;
 import live.tikgik.expenses.account.dto.AccountsContactInfoDto;
 import live.tikgik.expenses.account.dto.request.AccountReqDto;
 import live.tikgik.expenses.account.dto.request.AccountUpdateDto;
-import live.tikgik.expenses.account.service.AccountService;
+import live.tikgik.expenses.account.manager.AccountManager;
 import live.tikgik.expenses.shared.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +27,7 @@ import java.util.Map;
 @Slf4j
 @RefreshScope  // Add this
 public class AccountController {
-    private final AccountService accountService;
+    private final AccountManager accountManager;
     private final AccountsContactInfoDto accountsContactInfoDto;
     @Value("${build.version}")
     private String buildVersion;
@@ -36,7 +35,7 @@ public class AccountController {
     @PostMapping
     @ToLog
     public ResponseEntity<ApiResponse> createAccount(@Valid @RequestBody AccountReqDto account) {
-        ApiResponse responseDto = accountService.create(account);
+        ApiResponse responseDto = accountManager.create(account);
         if (responseDto != null) {
             return ResponseEntity.ok(responseDto);
         } else {
@@ -46,7 +45,7 @@ public class AccountController {
 
     @GetMapping("/refNo/{refNo}")
     public ResponseEntity<ApiResponse> getAccount(@PathVariable("refNo") String refNo) {
-        ApiResponse responseDto = accountService.get(refNo);
+        ApiResponse responseDto = accountManager.get(refNo);
         if (responseDto != null) {
             return ResponseEntity.ok(responseDto);
         } else {
@@ -56,7 +55,7 @@ public class AccountController {
 
     @GetMapping("/name/{name}")
     public ResponseEntity<ApiResponse> getAccountByName(@PathVariable("name") String name) {
-        ApiResponse responseDto = accountService.getAccountByName(name);
+        ApiResponse responseDto = accountManager.getAccountByName(name);
         if (responseDto != null) {
             return ResponseEntity.ok(responseDto);
         } else {
@@ -66,7 +65,7 @@ public class AccountController {
 
     @GetMapping("/{refNo}/budgets")
     public ResponseEntity<ApiResponse> getAccountBudgets(@PathVariable("refNo") String refNo) {
-        ApiResponse responseDto = accountService.getAccountBudgets(refNo);
+        ApiResponse responseDto = accountManager.getAccountBudgets(refNo);
         if (responseDto != null) {
             return ResponseEntity.ok(responseDto);
         } else {
@@ -76,13 +75,13 @@ public class AccountController {
 
     @PutMapping("/{refNo}")
     public ResponseEntity<ApiResponse> updateAccount(@PathVariable("refNo") String refNo, @Valid @RequestBody AccountUpdateDto accountUpdateDto) {
-        ApiResponse responseDto = accountService.update(refNo, accountUpdateDto);
+        ApiResponse responseDto = accountManager.update(refNo, accountUpdateDto);
         return ResponseEntity.ok(responseDto);
     }
 
     @DeleteMapping("/{refNo}")
     public ResponseEntity<ApiResponse> deleteAccount(@PathVariable("refNo") String refNo) {
-        ApiResponse responseDto = accountService.delete(refNo);
+        ApiResponse responseDto = accountManager.delete(refNo);
         return ResponseEntity.ok(responseDto);
     }
 
@@ -93,20 +92,20 @@ public class AccountController {
             @DefaultValue("id") @QueryParam("sortBy") String sortBy,
             @QueryParam("sortDirection") String direction*/
             Pageable pageable) {
-        ApiResponse responseDto = accountService.getAllEntities(pageable);
+        ApiResponse responseDto = accountManager.getAllEntities(pageable);
         return ResponseEntity.ok(responseDto);
 
     }
 
     @PutMapping("/addAssociation/{accountRefNo}/{budgetRefNo}")
     public ResponseEntity<ApiResponse> addAssociation(@PathVariable("accountRefNo") String accountRefNo, @PathVariable("budgetRefNo") String budgetRefNo) {
-        ApiResponse responseDto = accountService.addAssociation(accountRefNo, budgetRefNo);
+        ApiResponse responseDto = accountManager.addAssociation(accountRefNo, budgetRefNo);
         return ResponseEntity.ok(responseDto);
     }
 
     @PutMapping("/removeAssociation/{accountRefNo}/{budgetRefNo}")
     public ResponseEntity<ApiResponse> removeAssociation(@PathVariable("accountRefNo") String accountRefNo, @PathVariable("budgetRefNo") String budgetRefNo) {
-        ApiResponse responseDto = accountService.removeAssociation(accountRefNo, budgetRefNo);
+        ApiResponse responseDto = accountManager.removeAssociation(accountRefNo, budgetRefNo);
         return ResponseEntity.ok(responseDto);
     }
 

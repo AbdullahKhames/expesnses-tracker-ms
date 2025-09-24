@@ -1,14 +1,13 @@
 package live.tikgik.expenses.account.mapper;
 
 
-import live.tikgik.expenses.account.config.UserContextHolder;
+import live.tikgik.expenses.shared.model.UserContextHolder;
 import live.tikgik.expenses.account.dto.request.BudgetReqDto;
 import live.tikgik.expenses.account.dto.request.BudgetUpdateDto;
 import live.tikgik.expenses.account.dto.response.BudgetRespDto;
 import live.tikgik.expenses.account.entity.Account;
 import live.tikgik.expenses.account.entity.Budget;
 import org.mapstruct.*;
-import org.springframework.data.domain.Page;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -80,4 +79,5 @@ public abstract class BudgetMapper {
         entity.setAccount(account);
         entity.setCustomerId(UserContextHolder.getUser().getId());
     }
+
 }

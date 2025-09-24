@@ -115,7 +115,7 @@ public class AccountDAOImpl implements AccountDAO {
     @Override
     public List<Account> getByName(String name, String customerId) {
         try {
-            return accountRepository.findAllByNameLikeAndCustomerId(name, customerId);
+            return accountRepository.findAllByNameLikeAndCustomerId("%" + name + "%", customerId);
         } catch (NoResultException ex) {
             return Collections.emptyList();
         } catch (NonUniqueResultException ex) {
